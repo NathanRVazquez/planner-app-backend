@@ -1,0 +1,87 @@
+generator client {
+  provider = "dart run orm"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// turn off @defualt user id, user id should be firebase user id. email is insecure
+model users {
+  user_id         String            @id @default(cuid())
+  email           String            @db.VarChar(255)
+  signin_method   String?           @db.VarChar(255)
+  name            String            @db.VarChar(255)
+  device          String?           @db.VarChar(255)
+  username        String            @unique @db.VarChar(255)
+  password        String            @db.VarChar(255)
+  join_date       DateTime          @default(now())
+  user_timezone   Int?
+  project_members project_members[]
+  assignments assignments[]
+}
+
+model assignments {
+  assignment_id   String            @id @default(cuid())
+  create_date     DateTime          @default(now())
+  updated_at      DateTime?         @updatedAt
+  subject         String            @db.VarChar(255)
+  notes           String?
+  due_date        DateTime?         @db.Timestamp(6)
+  user_id         String 
+  assignment_type assignment_type
+  users           users         @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+  projects        projects?
+  reminders       reminders?
+  tasks            tasks?
+}
+
+enum assignment_type {
+  Reminder
+  Task
+  Project
+}
+
+model tasks {
+  assignment_id  String       @unique
+  complete_date  DateTime?    @db.Timestamp(6)
+  completed      Boolean
+  parent_project String?
+  assignments    assignments  @relation(fields: [assignment_id], references: [assignment_id], onDelete: NoAction, onUpdate: NoAction)
+  projects       projects? @relation(fields: [parent_project], references: [assignment_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+// only return reminders whose due date hasnt passed. advanced prisma/sql query
+model reminders {
+  assignment_id     String                @unique
+  reminder_category reminder_category
+  assignments       assignments        @relation(fields: [assignment_id], references: [assignment_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum reminder_category {
+  Event
+  Meeting
+  Webinar
+  Interview
+  Tutoring
+  Other
+}
+
+model projects {
+  assignment_id   String         @unique
+  complete_date   DateTime?      @db.Timestamp(6)
+  completed       Boolean
+  assignments     assignments @relation(fields: [assignment_id], references: [assignment_id], onDelete: NoAction, onUpdate: NoAction)
+  tasks           tasks[]
+  project_members project_members[]
+}
+
+// assigned to projects, review later
+model project_members {
+  project_member_id String     @id @default(cuid())
+  assignment_id     String
+  member_username   String     @db.VarChar(255)
+  project           projects   @relation(fields: [assignment_id], references: [assignment_id], onDelete: NoAction, onUpdate: NoAction)
+  users             users      @relation(fields: [member_username], references: [username], onDelete: NoAction, onUpdate: NoAction)
+}

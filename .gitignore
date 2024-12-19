@@ -1,0 +1,31 @@
+docker-compose.yml
+cloudbuild.yaml
+.vscode
+planner_app_backend/.vscode
+test-db.dart
+prisma/generated
+cloud-sql-proxy
+hunter-439519-4b323ff9b0daa.json
+hunter-439519-4b323ff9b0daa.json:Zone.Identifier
+node_modules
+/prisma/migrations
+
+
+
+# See https://www.dartlang.org/guides/libraries/private-files
+.env
+# Files and directories created by the Operating System
+.DS_Store
+
+# Files and directories created by pub
+.dart_tool/
+.packages
+pubspec.lock
+
+# Files and directories created by dart_frog
+build/
+.dart_frog
+
+# Test related files
+coverage/
+
